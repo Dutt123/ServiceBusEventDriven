@@ -15,28 +15,46 @@ async function main() {
 
   try {
     console.log("Waiting for one message...");
-    const messages = await receiver.receiveMessages(1, { maxWaitTimeInMs: 30000 });
+    // Wait until a message is available; no default timeout
+    const messages = await receiver.receiveMessages(1);
 
     if (messages.length > 0) {
       const message = messages[0];
-      console.log(`Received: ${message.body}`);
+      console.log(`Received message: ${message.body}`);
 
-      // Simulate different processing durations
-      const body = message.body;
-      let delay = 30 * 1000; // default 30 seconds
+      // Map processing times inside app code
+      let processingTime = 0;
+      switch (message.body) {
+        case "q1":
+          processingTime = 20;
+          break;
+        case "q2":
+          processingTime = 45;
+          break;
+        case "q3":
+          processingTime = 60;
+          break;
+        case "q4":
+          processingTime = 10;
+          break;
+        case "q5":
+          processingTime = 75;
+          break;
+        case "q6":
+          processingTime = 30;
+          break;
+        default:
+          processingTime = 0;
+          console.log(`No specific processing time for ${message.body}`);
+      }
 
-      if (body === "q1") delay = 30 * 1000;    // 30 sec
-      if (body === "q2") delay = 60 * 1000;    // 1 min
-      if (body === "q3") delay = 120 * 1000;   // 2 min
-      if (body === "q4") delay = 90 * 1000;    // 1.5 min
-      if (body === "q5") delay = 15 * 1000;    // 15 sec
-      if (body === "q6") delay = 45 * 1000;    // 45 sec
-
-      console.log(`Processing message ${body} for ${delay / 1000} seconds...`);
-      await sleep(delay);
+      if (processingTime > 0) {
+        console.log(`Processing message ${message.body} for ${processingTime} seconds...`);
+        await sleep(processingTime * 1000);
+      }
 
       await receiver.completeMessage(message);
-      console.log(`Completed message ${body}`);
+      console.log(`✅ Completed message: ${message.body}`);
     } else {
       console.log("No messages received.");
     }
