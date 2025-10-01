@@ -15,13 +15,13 @@ async function main() {
 
   try {
     console.log("Waiting for one message...");
-    // Wait until a message is available; no default timeout
+     const body = typeof message.body === "string" ? message.body : JSON.stringify(message.body);
     const messages = await receiver.receiveMessages(1);
 
     if (messages.length > 0) {
       const message = messages[0];
-      console.log(`Received message: ${message.body}`);
-
+      const body = typeof message.body === "string" ? message.body : JSON.stringify(message.body);
+      console.log(`Received message: ${body}`);
       // Map processing times inside app code
       let processingTime = 0;
       switch (message.body) {
