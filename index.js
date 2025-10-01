@@ -5,6 +5,16 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function normalizeBody(messageBody) {
+  if (Buffer.isBuffer(messageBody)) {
+    return messageBody.toString("utf8").trim();
+  }
+  if (typeof messageBody === "object" && messageBody?.data) {
+    return Buffer.from(messageBody.data).toString("utf8").trim();
+  }
+  return String(messageBody).trim().replace(/^"|"$/g, ""); // remove quotes if present
+}
+
 async function main() {
   const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME;
   const fullyQualifiedNamespace = process.env.AZURE_SERVICE_BUS_NAMESPACE;
@@ -19,36 +29,26 @@ async function main() {
 
     if (messages.length > 0) {
       const message = messages[0];
-      const body = typeof message.body === "string" ? message.body : JSON.stringify(message.body);
+      const body = normalizeBody(message.body);
       console.log(`Received message: ${body}`);
 
-      let processingTime = 0;
-      switch (body.trim()) {
-        case "q1":
-          processingTime = 20;
-          break;
-        case "q2":
-          processingTime = 45;
-          break;
-        case "q3":
-          processingTime = 60;
-          break;
-        case "q4":
-          processingTime = 10;
-          break;
-        case "q5":
-          processingTime = 75;
-          break;
-        case "q6":
-          processingTime = 30;
-          break;
-        default:
-          console.log(`❌ No specific processing time for ${body}`);
-      }
+      // Processing times
+      const timings = {
+        q1: 20,
+        q2: 45,
+        q3: 60,
+        q4: 10,
+        q5: 75,
+        q6: 30,
+      };
+
+      const processingTime = timings[body] || 0;
 
       if (processingTime > 0) {
         console.log(`⏳ Processing ${body} for ${processingTime} seconds...`);
         await sleep(processingTime * 1000);
+      } else {
+        console.log(`❌ No specific processing time for ${body}`);
       }
 
       await receiver.completeMessage(message);
