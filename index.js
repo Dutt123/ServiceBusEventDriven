@@ -1,35 +1,32 @@
 const { ServiceBusClient } = require("@azure/service-bus");
+const { DefaultAzureCredential } = require("@azure/identity");
 
 async function main() {
-    
-
-    const connectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
     const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME;
+    const fullyQualifiedNamespace = process.env.AZURE_SERVICE_BUS_NAMESPACE; 
+    // e.g. "stanukuservicebus.servicebus.windows.net"
 
-    const serviceBusClient = new ServiceBusClient(connectionString);
+    // Use managed identity
+    const credential = new DefaultAzureCredential();
+    const serviceBusClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
     const receiver = serviceBusClient.createReceiver(queueName);
 
     try {
-        console.log("Receiving messages...");
-
+        console.log("Receiving messages with AAD...");
         receiver.subscribe({
             processMessage: async (message) => {
                 console.log(`Received message: ${message.body}`);
-                // Your event-driven processing logic goes here
             },
             processError: async (error) => {
                 console.error("Error occurred:", error);
             },
         });
 
-        // Keep the program running
-        await new Promise((resolve) => setTimeout(resolve, 60000)); // Keep receiving messages for 1 minute
+        await new Promise((resolve) => setTimeout(resolve, 60000));
     } finally {
         await receiver.close();
         await serviceBusClient.close();
     }
 }
 
-main().catch((err) => {
-    console.error("Error:", err);
-});
+main().catch(console.error);
