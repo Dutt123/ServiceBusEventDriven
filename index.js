@@ -18,12 +18,25 @@ async function main() {
     const messages = await receiver.receiveMessages(1, { maxWaitTimeInMs: 30000 });
 
     if (messages.length > 0) {
-      console.log(`Received: ${messages[0].body}`);
-      await receiver.completeMessage(messages[0]);
+      const message = messages[0];
+      console.log(`Received: ${message.body}`);
 
-      console.log("Sleeping for 2 minutes before continuing...");
-      await sleep(2 * 60 * 1000); // 2 minutes in milliseconds
-      console.log("Resuming after sleep.");
+      // Simulate different processing durations
+      const body = message.body;
+      let delay = 30 * 1000; // default 30 seconds
+
+      if (body === "q1") delay = 30 * 1000;    // 30 sec
+      if (body === "q2") delay = 60 * 1000;    // 1 min
+      if (body === "q3") delay = 120 * 1000;   // 2 min
+      if (body === "q4") delay = 90 * 1000;    // 1.5 min
+      if (body === "q5") delay = 15 * 1000;    // 15 sec
+      if (body === "q6") delay = 45 * 1000;    // 45 sec
+
+      console.log(`Processing message ${body} for ${delay / 1000} seconds...`);
+      await sleep(delay);
+
+      await receiver.completeMessage(message);
+      console.log(`Completed message ${body}`);
     } else {
       console.log("No messages received.");
     }
