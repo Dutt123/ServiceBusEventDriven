@@ -34,11 +34,11 @@ async function main() {
 
       // Processing times
       const timings = {
-        q1: 20,
+        q1: 360,
         q2: 45,
-        q3: 60,
-        q4: 10,
-        q5: 75,
+        q3: 560,
+        q4: 100,
+        q5: 175,
         q6: 30,
       };
 
