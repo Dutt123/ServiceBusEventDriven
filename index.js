@@ -15,16 +15,15 @@ async function main() {
 
   try {
     console.log("Waiting for one message...");
-     const body = typeof message.body === "string" ? message.body : JSON.stringify(message.body);
     const messages = await receiver.receiveMessages(1);
 
     if (messages.length > 0) {
       const message = messages[0];
       const body = typeof message.body === "string" ? message.body : JSON.stringify(message.body);
       console.log(`Received message: ${body}`);
-      // Map processing times inside app code
+
       let processingTime = 0;
-      switch (message.body) {
+      switch (body.trim()) {
         case "q1":
           processingTime = 20;
           break;
@@ -44,17 +43,16 @@ async function main() {
           processingTime = 30;
           break;
         default:
-          processingTime = 0;
-          console.log(`No specific processing time for ${message.body}`);
+          console.log(`❌ No specific processing time for ${body}`);
       }
 
       if (processingTime > 0) {
-        console.log(`Processing message ${message.body} for ${processingTime} seconds...`);
+        console.log(`⏳ Processing ${body} for ${processingTime} seconds...`);
         await sleep(processingTime * 1000);
       }
 
       await receiver.completeMessage(message);
-      console.log(`✅ Completed message: ${message.body}`);
+      console.log(`✅ Completed message: ${body}`);
     } else {
       console.log("No messages received.");
     }
